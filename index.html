@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>神六 cp TOP3</title>
+    <style>
+        /* 全局黑粉高级风格 */
+        :root {
+            --bg-dark: #0f0f13;
+            --bg-card: #1a1a22;
+            --accent-pink: #ff2a6d;
+            --accent-pink-hover: #ff4d88;
+            --text-main: #f0f0f5;
+            --text-sub: #8e8e9a;
+            --border-color: #2a2a35;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            background-image: radial-gradient(circle at 50% 0%, rgba(255, 42, 109, 0.08) 0%, transparent 60%);
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 首页样式 */
+        .home-state {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .home-state h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(255, 42, 109, 0.4);
+            letter-spacing: 2px;
+        }
+        .home-state p {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-bottom: 50px;
+            line-height: 1.6;
+            max-width: 300px;
+        }
+        .home-start-btn {
+            background-color: var(--accent-pink);
+            color: #fff;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 42, 109, 0.5);
+            transition: all 0.2s;
+            letter-spacing: 2px;
+        }
+        .home-start-btn:active { transform: scale(0.97); background-color: var(--accent-pink-hover); }
+
+        /* 顶部导航 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-bottom: 25px;
+        }
+        .header .back { cursor: pointer; font-size: 16px; color: var(--text-main); transition: color 0.3s; }
+        .header .back:hover { color: var(--accent-pink); }
+
+        /* 进度条 */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--bg-card);
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff2a6d, #ff7eb3);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 3px;
+            box-shadow: 0 0 10px rgba(255, 42, 109, 0.6);
+        }
+
+        /* 回合信息 */
+        .round-info { text-align: center; margin-bottom: 30px; }
+        .round-info .round-num { color: var(--accent-pink); font-size: 13px; font-weight: 700; letter-spacing: 3px; margin-bottom: 12px; text-transform: uppercase; }
+        .round-info h1 { font-size: 24px; font-weight: 800; margin-bottom: 10px; color: #fff; text-shadow: 0 0 20px rgba(255, 42, 109, 0.2); }
+        .round-info p { font-size: 12px; color: var(--text-sub); }
+
+        /* 对比卡片区 */
+        .comparison-area { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 30px; flex: 1; }
+        .card {
+            flex: 1; background-color: #fff; border-radius: 16px; overflow: hidden;
+            display: flex; flex-direction: column; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s;
+            position: relative; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            border: 2px solid transparent;
+        }
+        .card:active { transform: scale(0.97); }
+        .card.selected { border-color: var(--accent-pink); box-shadow: 0 0 20px rgba(255, 42, 109, 0.4), 0 8px 24px rgba(0,0,0,0.4); }
+        .card-img-wrapper { position: relative; width: 100%; padding-top: 135%; overflow: hidden; background-color: #1a1a22; }
+        .card-img-wrapper img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+        .card:hover .card-img-wrapper img { transform: scale(1.05); }
+        .card-number {
+            position: absolute; top: 10px; left: 10px; background-color: rgba(15, 15, 19, 0.8); backdrop-filter: blur(4px);
+            color: #fff; font-size: 12px; font-weight: 600; width: 28px; height: 28px;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; z-index: 2;
+        }
+        .card-info { padding: 14px 10px; background-color: #fff; color: #0f0f13; text-align: center; }
+        .card-info h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .card-info p { font-size: 11px; color: #777; font-weight: 500; }
+
+        /* VS 标识 */
+        .vs-badge {
+            font-size: 13px; color: var(--accent-pink); font-weight: 900;
+            border: 2px solid var(--accent-pink); border-radius: 50%; width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            background-color: var(--bg-dark); z-index: 2; flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(255, 42, 109, 0.3);
+        }
+
+        /* 底部操作按钮 */
+        .footer-actions { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 20px; }
+        .btn {
+            flex: 1; background-color: var(--bg-card); color: var(--text-main);
+            border: 1px solid var(--border-color); border-radius: 14px;
+            padding: 14px 0; font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; text-align: center;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-skip { background-color: transparent; border-color: #555; color: #aaa; }
+        .btn-skip:hover { border-color: var(--accent-pink); color: var(--accent-pink); background-color: rgba(255, 42, 109, 0.05); }
+        .btn-save { border-color: var(--border-color); color: var(--text-sub); }
+        .btn-save:hover { border-color: #555; color: #fff; }
+
+        /* 结果页样式 */
+        .results-state { display: none; flex-direction: column; flex: 1; padding-bottom: 30px; }
+        .results-title { font-size: 24px; font-weight: 800; text-align: center; margin-bottom: 25px; color: #fff; text-shadow: 0 0 20px rgba(255, 42, 109, 0.4); }
+
+        /* 领奖台排版 */
+        .top-three { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .top-row { display: flex; justify-content: center; gap: 20px; width: 100%; }
+        .top-item { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; max-width: 45%; }
+        .top-item .top-img-wrapper {
+            width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden;
+            border: 3px solid #333; margin-bottom: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); background-color: #1a1a22;
+        }
+        .top-item .top-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .top-item.rank-1 { max-width: 60%; }
+        .top-item.rank-1 .top-img-wrapper { border-color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+        .top-item.rank-2 .top-img-wrapper { border-color: #c0c0c0; }
+        .top-item.rank-3 .top-img-wrapper { border-color: #cd7f32; }
+        .top-item .top-name { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+
+        .top-list { background: var(--bg-card); border-radius: 16px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .top-list h3 { font-size: 14px; color: var(--text-sub); font-weight: 600; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; letter-spacing: 1px; }
+        .rank-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .rank-row:last-child { border-bottom: none; }
+        .rank-row .rank-num { width: 24px; color: var(--text-sub); font-weight: 700; font-size: 12px; }
+        .rank-row .rank-img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .rank-row .rank-info { flex: 1; display: flex; align-items: center; }
+        .rank-row .rank-name { font-weight: 600; color: #fff; }
+        .rank-row .rank-votes { color: var(--accent-pink); font-weight: 800; font-size: 14px; }
+
+        .btn-restart { background-color: var(--accent-pink); color: #fff; border: none; padding: 16px 30px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; width: 100%; box-shadow: 0 4px 15px rgba(255, 42, 109, 0.4); transition: background 0.2s; }
+        .btn-restart:active { transform: scale(0.98); background-color: var(--accent-pink-hover); }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    
+    <!-- 首页 -->
+    <div class="home-state" id="home-state">
+        <h1>神六 cp TOP3</h1>
+        <p>胜败者组淘汰赛<br>胜者晋级，败者复活<br>直到决出最终 Top 3</p>
+        <button class="home-start-btn" onclick="startVote()">开始选择</button>
+    </div>
+
+    <!-- 投票区域 -->
+    <div id="voting-area" style="display: none; flex-direction: column; flex: 1;">
+        <div class="header">
+            <div class="back" onclick="goHome()">← 返回首页</div>
+            <div class="count" id="selection-count">0 次选择</div>
+        </div>
+        <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+        
+        <div class="round-info">
+            <div class="round-num" id="round-num">ROUND 01</div>
+            <h1>神六 cp TOP3</h1>
+            <p id="round-desc">胜者组对决 · 胜者继续前进</p>
+        </div>
+        <div class="comparison-area">
+            <div class="card" id="card-left" onclick="selectCard('left')">
+                <div class="card-img-wrapper"><div class="card-number" id="num-left">01</div><img id="img-left" src="" alt=""></div>
+                <div class="card-info"><h3 id="name-left">加载中...</h3><p id="sub-left"></p></div>
+            </div>
+            <div class="vs-badge">VS</div>
+            <div class="card" id="card-right" onclick="selectCard('right')">
+                <div class="card-img-wrapper"><div class="card-number" id="num-right">02</div><img id="img-right" src="" alt=""></div>
+                <div class="card-info"><h3 id="name-right">加载中...</h3><p id="sub-right"></p></div>
+            </div>
+        </div>
+        <div class="footer-actions">
+            <button class="btn" id="btn-undo" onclick="undoSelection()">↺ 撤回</button>
+            <button class="btn btn-skip" id="btn-skip" onclick="skipMatch()">⏭ 两个都不选</button>
+            <button class="btn btn-save" id="btn-save" onclick="saveProgress()">保存进度</button>
+        </div>
+    </div>
+
+    <!-- 结果页 -->
+    <div class="results-state" id="results-state">
+        <div class="results-title">🏆 你的心选 Top 3</div>
+        
+        <div class="top-three" id="top-three">
+            <div class="top-row" id="top-row-1"></div>
+            <div class="top-row" id="top-row-2-3"></div>
+        </div>
+        
+        <div class="top-list">
+            <h3>📊 Top 10 荣誉榜单</h3>
+            <div id="top-list-container"></div>
+        </div>
+
+        <div class="top-list">
+            <h3>📋 完整排名 (30项)</h3>
+            <div id="all-list-container"></div>
+        </div>
+        
+        <button class="btn-restart" onclick="restartVote()">🔄 重新开始</button>
+    </div>
+</div>
+
+<script>
+    // ================= 1. 数据配置 =================
+    const allOptions = [
+        { id: '01', img: '1.jpg', name: '棍宝', desc: '朱志鑫 × 张泽禹' }, { id: '02', img: '2.jpg', name: '宝棍', desc: '张泽禹 × 朱志鑫' },
+        { id: '03', img: '3.jpg', name: '志极', desc: '朱志鑫 × 张极' }, { id: '04', img: '4.jpg', name: '极志', desc: '张极 × 朱志鑫' },
+        { id: '05', img: '5.jpg', name: '鑫左', desc: '朱志鑫 × 左航' }, { id: '06', img: '6.jpg', name: '左朱', desc: '左航 × 朱志鑫' },
+        { id: '07', img: '7.jpg', name: '棍铲', desc: '朱志鑫 × 苏新皓' }, { id: '08', img: '8.jpg', name: '铲棍', desc: '苏新皓 × 朱志鑫' },
+        { id: '09', img: '9.jpg', name: '棍顺', desc: '朱志鑫 × 张峻豪' }, { id: '10', img: '10.jpg', name: '顺棍', desc: '张峻豪 × 朱志鑫' },
+        { id: '13', img: '13.jpg', name: '禹极', desc: '张泽禹 × 张极' }, { id: '14', img: '14.jpg', name: '极禹', desc: '张极 × 张泽禹' },
+        { id: '15', img: '15.jpg', name: '芒猴', desc: '张泽禹 × 左航' }, { id: '16', img: '16.jpg', name: '航禹', desc: '左航 × 张泽禹' },
+        { id: '17', img: '17.jpg', name: '宝铲', desc: '张泽禹 × 苏新皓' }, { id: '18', img: '18.jpg', name: '铲宝', desc: '苏新皓 × 张泽禹' },
+        { id: '19', img: '19.jpg', name: '禹顺', desc: '张泽禹 × 张峻豪' }, { id: '20', img: '20.jpg', name: '顺宝', desc: '张峻豪 × 张泽禹' },
+        { id: '23', img: '23.jpg', name: '极航', desc: '张极 × 左航' }, { id: '24', img: '24.jpg', name: '航极', desc: '左航 × 张极' },
+        { id: '25', img: '25.jpg', name: '极皓', desc: '张极 × 苏新皓' }, { id: '26', img: '26.jpg', name: '皓极', desc: '苏新皓 × 张极' },
+        { id: '27', img: '27.jpg', name: '极豪', desc: '张极 × 张峻豪' }, { id: '28', img: '28.jpg', name: '鼻米', desc: '张峻豪 × 张极' },
+        { id: '31', img: '31.jpg', name: '左新房', desc: '左航 × 苏新皓' }, { id: '32', img: '32.jpg', name: '苏左', desc: '苏新皓 × 左航' },
+        { id: '33', img: '33.jpg', name: '航顺', desc: '左航 × 张峻豪' }, { id: '34', img: '34.jpg', name: '顺航', desc: '张峻豪 × 左航' },
+        { id: '37', img: '37.jpg', name: '铲顺', desc: '苏新皓 × 张峻豪' }, { id: '38', img: '38.jpg', name: '顺铲', desc: '张峻豪 × 苏新皓' }
+    ];
+
+    // ================= 2. 状态变量 =================
+    let poolA = [];              // 胜者组
+    let poolB = [];              // 败者组
+    let currentMatch = null;     // 当前对决
+    let roundNum = 1;            // 轮次
+    let history = [];            // 操作历史（用于撤回）
+    let selections = [];         // 选择历史
+    let eliminatedOrder = [];    // 淘汰顺序
+    let topThreeFinal = [];      // 最终前三名
+
+    // ================= 3. 初始化与轮次推进 =================
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initVote() {
+        poolA = shuffleArray([...allOptions]);
+        poolB = [];
+        roundNum = 1;
+        history = [];
+        selections = [];
+        eliminatedOrder = [];
+        topThreeFinal = [];
+        
+        document.getElementById('voting-area').style.display = 'flex';
+        document.getElementById('results-state').style.display = 'none';
+        document.getElementById('selection-count').innerText = '0 次选择';
+        
+        startNextMatch();
+    }
+
+    function startVote() {
+        document.getElementById('home-state').style.display = 'none';
+        initVote();
+    }
+
+    function goHome() {
+        document.getElementById('home-state').style.display = 'flex';
+        document.getElementById('voting-area').style.display = 'none';
+        document.getElementById('results-state').style.display = 'none';
+    }
+
+    // 核心逻辑：决定下一场打谁
+    function startNextMatch() {
+        if (poolA.length + poolB.length <= 3) {
+            finishVote();
+            return;
+        }
+
+        if (poolA.length >= 2) {
+            currentMatch = {
+                left: poolA[0],
+                right: poolA[1],
+                type: 'winners'
+            };
+        } else if (poolA.length === 1) {
+            const lastWinner = poolA.pop();
+            poolB.push(lastWinner);
+            startNextMatch();
+            return;
+        } else {
+            if (poolB.length >= 2) {
+                currentMatch = {
+                    left: poolB[0],
+                    right: poolB[1],
+                    type: 'losers'
+                };
+            } else {
+                finishVote();
+                return;
+            }
+        }
+
+        updateUI();
+    }
+
+    // ================= 4. UI 渲染 =================
+    const elements = {
+        roundNum: document.getElementById('round-num'), roundDesc: document.getElementById('round-desc'),
+        progressBar: document.getElementById('progress-bar'), count: document.getElementById('selection-count'),
+        leftImg: document.getElementById('img-left'), leftName: document.getElementById('name-left'),
+        leftSub: document.getElementById('sub-left'), leftNum: document.getElementById('num-left'),
+        rightImg: document.getElementById('img-right'), rightName: document.getElementById('name-right'),
+        rightSub: document.getElementById('sub-right'), rightNum: document.getElementById('num-right'),
+        cardLeft: document.getElementById('card-left'), cardRight: document.getElementById('card-right')
+    };
+
+    function updateUI() {
+        if (!currentMatch) return;
+
+        elements.roundNum.innerText = `ROUND ${roundNum.toString().padStart(2, '0')}`;
+        if (currentMatch.type === 'winners') {
+            elements.roundDesc.innerText = `胜者组对决 · 胜者晋级 · 败者掉入败者组`;
+        } else {
+            elements.roundDesc.innerText = `败者组对决 · 胜者复活 · 败者直接淘汰`;
+        }
+        
+        const totalRemaining = poolA.length + poolB.length;
+        elements.progressBar.style.width = `${(1 - totalRemaining / allOptions.length) * 100}%`;
+        elements.count.innerText = `${selections.length} 次选择`;
+
+        elements.leftImg.src = currentMatch.left.img; elements.leftName.innerText = currentMatch.left.name;
+        elements.leftSub.innerText = currentMatch.left.desc; elements.leftNum.innerText = currentMatch.left.id;
+
+        elements.rightImg.src = currentMatch.right.img; elements.rightName.innerText = currentMatch.right.name;
+        elements.rightSub.innerText = currentMatch.right.desc; elements.rightNum.innerText = currentMatch.right.id;
+
+        elements.cardLeft.classList.remove('selected'); elements.cardRight.classList.remove('selected');
+    }
+
+    // ================= 5. 交互逻辑 =================
+    function selectCard(side) {
+        if (!currentMatch) return;
+        
+        const winner = side === 'left' ? currentMatch.left : currentMatch.right;
+        const loser = side === 'left' ? currentMatch.right : currentMatch.left;
+
+        if (side === 'left') {
+            elements.cardLeft.classList.add('selected'); elements.cardRight.classList.remove('selected');
+        } else {
+            elements.cardRight.classList.add('selected'); elements.cardLeft.classList.remove('selected');
+        }
+
+        setTimeout(() => {
+            // 保存快照
+            history.push({ 
+                type: 'select',
+                round: roundNum,
+                matchType: currentMatch.type,
+                winner: winner,
+                loser: loser,
+                snapshotA: [...poolA],
+                snapshotB: [...poolB],
+                snapshotEliminated: [...eliminatedOrder]
+            });
+            selections.push(side);
+
+            if (currentMatch.type === 'winners') {
+                poolA = poolA.filter(c => c.id !== winner.id && c.id !== loser.id);
+                poolA.push(winner);
+                poolB.push(loser);
+            } else {
+                poolB = poolB.filter(c => c.id !== winner.id && c.id !== loser.id);
+                poolB.push(winner);
+                eliminatedOrder.unshift(loser);
+            }
+
+            roundNum++;
+            startNextMatch();
+        }, 150);
+    }
+
+    function skipMatch() {
+        if (!currentMatch) return;
+        
+        // 保存快照
+        history.push({ 
+            type: 'skip', 
+            round: roundNum,
+            matchType: currentMatch.type,
+            left: currentMatch.left,
+            right: currentMatch.right,
+            snapshotA: [...poolA],
+            snapshotB: [...poolB],
+            snapshotEliminated: [...eliminatedOrder]
+        });
+        selections.push('skip');
+
+        if (currentMatch.type === 'winners') {
+            poolA = poolA.filter(c => c.id !== currentMatch.left.id && c.id !== currentMatch.right.id);
+        } else {
+            poolB = poolB.filter(c => c.id !== currentMatch.left.id && c.id !== currentMatch.right.id);
+        }
+        
+        eliminatedOrder.unshift(currentMatch.right);
+        eliminatedOrder.unshift(currentMatch.left);
+
+        roundNum++;
+        startNextMatch();
+    }
+
+    function undoSelection() {
+        if (history.length === 0) { alert('没有可以撤回的操作了'); return; }
+        const lastAction = history.pop();
+        
+        // 恢复快照
+        poolA = lastAction.snapshotA || [];
+        poolB = lastAction.snapshotB || [];
+        eliminatedOrder = lastAction.snapshotEliminated || [];
+        
+        roundNum = lastAction.round;
+        selections.pop();
+        startNextMatch();
+        elements.cardLeft.classList.remove('selected'); elements.cardRight.classList.remove('selected');
+    }
+
+    function saveProgress() {
+        alert('当前进度已临时保存在浏览器缓存中');
+    }
+
+    // ================= 6. 结算页面 =================
+    function finishVote() {
+        topThreeFinal = [...poolA, ...poolB];
+        
+        if (topThreeFinal.length === 2) {
+            topThreeFinal.push(eliminatedOrder[0]);
+        }
+
+        showFinished();
+    }
+
+    function showFinished() {
+        document.getElementById('voting-area').style.display = 'none';
+        document.getElementById('results-state').style.display = 'flex';
+
+        const top3 = topThreeFinal;
+        const allSorted = [...top3, ...eliminatedOrder];
+
+        const topRow1 = document.getElementById('top-row-1');
+        const topRow2_3 = document.getElementById('top-row-2-3');
+        topRow1.innerHTML = ''; topRow2_3.innerHTML = '';
+
+        const rankClasses = ['rank-1', 'rank-2', 'rank-3'];
+
+        if (top3[0]) {
+            const div = document.createElement('div');
+            div.className = `top-item ${rankClasses[0]}`;
+            div.innerHTML = `
+                <div class="top-img-wrapper"><img class="top-img" src="${top3[0].img}" alt="${top3[0].name}"></div>
+                <div class="top-name">${top3[0].name}</div>
+            `;
+            topRow1.appendChild(div);
+        }
+        [1, 2].forEach(index => {
+            if (top3[index]) {
+                const div = document.createElement('div');
+                div.className = `top-item ${rankClasses[index]}`;
+                div.innerHTML = `
+                    <div class="top-img-wrapper"><img class="top-img" src="${top3[index].img}" alt="${top3[index].name}"></div>
+                    <div class="top-name">${top3[index].name}</div>
+                `;
+                topRow2_3.appendChild(div);
+            }
+        });
+
+        const listContainer = document.getElementById('top-list-container');
+        listContainer.innerHTML = '';
+        allSorted.slice(0, 10).forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'rank-row';
+            div.innerHTML = `
+                <div class="rank-num">${index + 1}</div>
+                <div class="rank-info">
+                    <img class="rank-img" src="${item.img}" alt="${item.name}">
+                    <span class="rank-name">${item.name}</span>
+                </div>
+                <div class="rank-votes">TOP ${index + 1}</div>
+            `;
+            listContainer.appendChild(div);
+        });
+
+        const allListContainer = document.getElementById('all-list-container');
+        allListContainer.innerHTML = '';
+        allSorted.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'rank-row';
+            const isTop10 = index < 10;
+            div.innerHTML = `
+                <div class="rank-num" style="opacity: ${isTop10 ? 1 : 0.5}">${index + 1}</div>
+                <div class="rank-info" style="opacity: ${isTop10 ? 1 : 0.6}">
+                    <img class="rank-img" src="${item.img}" alt="${item.name}" style="width: ${isTop10 ? '34px' : '28px'}; height: ${isTop10 ? '34px' : '28px'};">
+                    <span class="rank-name" style="font-weight: ${isTop10 ? '700' : '400'}">${item.name}</span>
+                </div>
+                <div class="rank-votes" style="font-weight: ${isTop10 ? '800' : '500'}; color: ${isTop10 ? 'var(--accent-pink)' : 'var(--text-sub)'};">TOP ${index + 1}</div>
+            `;
+            allListContainer.appendChild(div);
+        });
+    }
+
+    function restartVote() { 
+        goHome();
+    }
+
+    window.onload = function() {
+        document.getElementById('home-state').style.display = 'flex';
+        document.getElementById('voting-area').style.display = 'none';
+        document.getElementById('results-state').style.display = 'none';
+    };
+</script>
+</body>
+</html>
