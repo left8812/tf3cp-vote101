@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>tf3心选cp101</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body { 
+            background-color: #fff5f8; 
+            color: #5c3a46; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+            overflow: hidden;
+        }
+        
+        .app-container { width: 100%; max-width: 480px; padding: 20px; display: flex; flex-direction: column; position: relative; height: 100vh; }
+        
+        /* ================= 首页样式 ================= */
+        .welcome-state { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; animation: fadeIn 0.6s ease;
+        }
+        
+        .welcome-icon { font-size: 60px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
+        .welcome-title { font-size: 32px; font-weight: 900; color: #ff6b81; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 4px 12px rgba(255, 107, 129, 0.2); }
+        .welcome-subtitle { font-size: 15px; color: #a88292; margin-bottom: 50px; line-height: 1.6; max-width: 80%; }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #ff9a9e 0%, #ff6b81 100%);
+            color: white; border: none; padding: 18px 60px; border-radius: 30px; font-size: 18px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 107, 129, 0.35); transition: all 0.3s ease; letter-spacing: 2px;
+        }
+        .btn-start:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(255, 107, 129, 0.35); }
+        
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ================= 投票页样式 ================= */
+        .header { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #b08e9a; margin-bottom: 20px; }
+        .header .back { cursor: pointer; font-size: 16px; color: #8c5b6b; }
+        
+        .progress-container { width: 100%; height: 6px; background-color: #fce4ec; border-radius: 3px; margin-bottom: 30px; overflow: hidden; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff9a9e, #ff6b81); width: 0%; transition: width 0.4s ease; border-radius: 3px; }
+        
+        .round-info { text-align: center; margin-bottom: 30px; }
+        .round-info .round-num { color: #ff6b81; font-size: 14px; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
+        .round-info h1 { font-size: 24px; font-weight: 800; margin-bottom: 10px; color: #4a2e38; }
+        .round-info p { font-size: 13px; color: #a88292; }
+        
+        .comparison-area { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 40px; flex: 1; }
+        
+        .card { flex: 1; background-color: #ffffff; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; box-shadow: 0 6px 16px rgba(255, 107, 129, 0.1); border: 2px solid transparent; }
+        .card:active { transform: scale(0.98); }
+        .card.selected { border-color: #ff6b81; box-shadow: 0 0 0 4px rgba(255, 107, 129, 0.2), 0 6px 16px rgba(255, 107, 129, 0.2); }
+        
+        .card-img-wrapper { position: relative; width: 100%; padding-top: 130%; overflow: hidden; background-color: #fff0f3; }
+        .card-img-wrapper img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-number { position: absolute; top: 10px; left: 10px; background-color: rgba(255, 107, 129, 0.85); color: #fff; font-size: 12px; font-weight: 600; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; }
+        
+        .card-info { padding: 14px 10px; background-color: #fff; color: #4a2e38; text-align: center; }
+        .card-info h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; color: #ff6b81; }
+        .card-info p { font-size: 12px; color: #a88292; }
+        
+        .vs-badge { font-size: 14px; color: #ff6b81; font-weight: 800; border: 2px solid #ff6b81; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background-color: #fff; z-index: 2; flex-shrink: 0; box-shadow: 0 2px 8px rgba(255, 107, 129, 0.2); }
+        
+        .footer-actions { display: flex; justify-content: space-between; gap: 15px; padding-bottom: 20px; }
+        
+        .btn { flex: 1; background-color: #fff; color: #ff6b81; border: 2px solid #ffd1dc; border-radius: 20px; padding: 12px 0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .btn:active { background-color: #fff0f3; transform: scale(0.98); }
+        .btn-save { border-color: #e0e0e0; color: #999; }
+        
+        /* ================= 结果页样式（保持 4:3 图片，确保在一屏内） ================= */
+        .results-state { display: none; flex-direction: column; flex: 1; padding-bottom: 20px; overflow-y: auto; }
+        .results-title { font-size: 22px; color: #ff6b81; font-weight: 800; text-align: center; margin-bottom: 20px; }
+        
+        /* 第一名单独一排，但尺寸克制，保证第二三名也能看到 */
+        .top-1-container { 
+            display: flex; 
+            justify-content: center; 
+            margin-bottom: 20px; 
+            animation: popIn 0.5s ease;
+        }
+        
+        .top-1-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 120px; /* 保持合适宽度 */
+        }
+        
+        /* 第一名图片恢复 4:3 比例 */
+        .top-1-item .top-img-wrapper {
+            width: 100px;
+            height: 133px; /* 4:3 比例 */
+            border-radius: 12px;
+            overflow: hidden;
+            border: 4px solid #ff6b81;
+            box-shadow: 0 8px 20px rgba(255, 107, 129, 0.3);
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .top-1-item .top-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .top-1-item .crown { font-size: 26px; margin-bottom: -10px; z-index: 2; }
+        .top-1-item .top-name { font-size: 16px; font-weight: 900; color: #ff6b81; margin-bottom: 4px; }
+        .top-1-item .top-votes { font-size: 12px; color: #a88292; font-weight: 700; background: #fff; padding: 3px 10px; border-radius: 10px; border: 1px solid #ffd1dc; }
+        
+        /* 第二名和第三名并列，图片也是 4:3 */
+        .top-2-3-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .top-item { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100px; }
+        
+        .top-item .top-img-wrapper {
+            width: 80px;
+            height: 106px; /* 4:3 比例 */
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #ffd1dc;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 10px rgba(255, 107, 129, 0.15);
+        }
+        
+        .top-item .top-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .top-item .top-name { font-size: 13px; font-weight: 800; color: #4a2e38; }
+        .top-item .top-votes { font-size: 11px; color: #ff6b81; margin-top: 2px; font-weight: 600; }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .top-list { background: #ffffff; border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255, 107, 129, 0.08); }
+        .top-list h3 { font-size: 14px; color: #a88292; margin-bottom: 10px; border-bottom: 1px solid #fce4ec; padding-bottom: 8px; }
+        
+        .rank-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; font-size: 13px; border-bottom: 1px solid #fce4ec; }
+        .rank-row:last-child { border-bottom: none; }
+        .rank-row .rank-num { width: 24px; color: #a88292; font-weight: 800; }
+        .rank-row .rank-img-wrapper { width: 34px; height: 45px; border-radius: 6px; overflow: hidden; margin-right: 10px; border: 2px solid #fff0f3; flex-shrink: 0; }
+        .rank-row .rank-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .rank-row .rank-info { flex: 1; display: flex; align-items: center; font-weight: 600; color: #4a2e38; }
+        .rank-row .rank-votes { color: #ff6b81; font-weight: 800; }
+        
+        .btn-restart { background-color: #ff6b81; color: white; border: none; padding: 16px 30px; border-radius: 24px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 10px; width: 100%; box-shadow: 0 6px 16px rgba(255, 107, 129, 0.3); transition: all 0.2s; }
+        .btn-restart:active { transform: scale(0.98); box-shadow: 0 4px 8px rgba(255, 107, 129, 0.3); }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    
+    <!-- 首页 -->
+    <div class="welcome-state" id="welcome-state">
+        <div class="welcome-icon">💖</div>
+        <h1 class="welcome-title">tf3心选cp101</h1>
+        <p class="welcome-subtitle">共21轮随机匹配<br>选出你心中的Top 3</p>
+        <button class="btn-start" onclick="startVote()">开始选择</button>
+    </div>
+
+    <!-- 投票页 -->
+    <div id="voting-area" style="display: none; flex-direction: column; flex: 1;">
+        <div class="header">
+            <div class="back" onclick="backToHome()">← 返回首页</div>
+            <div class="count" id="selection-count">0 次选择</div>
+        </div>
+        <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+
+        <div class="round-info">
+            <div class="round-num" id="round-num">ROUND 01</div>
+            <h1>tf3心选cp101</h1>
+            <p id="round-desc">正在随机匹配第 1 / 21 组CP · 必须二选一</p>
+        </div>
+        <div class="comparison-area">
+            <div class="card" id="card-left" onclick="selectCard('left')">
+                <div class="card-img-wrapper"><div class="card-number" id="num-left">01</div><img id="img-left" src="" alt=""></div>
+                <div class="card-info"><h3 id="name-left">加载中...</h3><p id="sub-left"></p></div>
+            </div>
+            <div class="vs-badge">VS</div>
+            <div class="card" id="card-right" onclick="selectCard('right')">
+                <div class="card-img-wrapper"><div class="card-number" id="num-right">02</div><img id="img-right" src="" alt=""></div>
+                <div class="card-info"><h3 id="name-right">加载中...</h3><p id="sub-right"></p></div>
+            </div>
+        </div>
+        <div class="footer-actions">
+            <button class="btn" id="btn-undo" onclick="undoSelection()">↺ 撤回</button>
+            <button class="btn btn-save" id="btn-save" onclick="saveProgress()">保存进度</button>
+        </div>
+    </div>
+
+    <!-- 结果页 -->
+    <div class="results-state" id="results-state">
+        <div class="results-title">🏆 你的心选 Top 3</div>
+        
+        <!-- 第一名独占一排 -->
+        <div class="top-1-container" id="top-1-container"></div>
+        
+        <!-- 第二名和第三名并列 -->
+        <div class="top-2-3-container" id="top-2-3-container"></div>
+        
+        <div class="top-list">
+            <h3>Top 10 完整榜单</h3>
+            <div id="top-list-container"></div>
+        </div>
+        <button class="btn-restart" onclick="restartVote()">重新开始</button>
+    </div>
+
+</div>
+
+<script>
+    // ================= 1. 数据配置 =================
+    const allOptions = [
+        { id: '01', img: '1.jpg', name: '棍宝', desc: '朱志鑫 × 张泽禹' }, { id: '02', img: '2.jpg', name: '宝棍', desc: '张泽禹 × 朱志鑫' },
+        { id: '03', img: '3.jpg', name: '志极', desc: '朱志鑫 × 张极' }, { id: '04', img: '4.jpg', name: '极志', desc: '张极 × 朱志鑫' },
+        { id: '05', img: '5.jpg', name: '鑫左', desc: '朱志鑫 × 左航' }, { id: '06', img: '6.jpg', name: '左朱', desc: '左航 × 朱志鑫' },
+        { id: '07', img: '7.jpg', name: '棍铲', desc: '朱志鑫 × 苏新皓' }, { id: '08', img: '8.jpg', name: '铲棍', desc: '苏新皓 × 朱志鑫' },
+        { id: '09', img: '9.jpg', name: '棍顺', desc: '朱志鑫 × 张峻豪' }, { id: '10', img: '10.jpg', name: '顺棍', desc: '张峻豪 × 朱志鑫' },
+        { id: '11', img: '11.jpg', name: '朱余', desc: '朱志鑫 × 余宇涵' }, { id: '12', img: '12.jpg', name: '余朱', desc: '余宇涵 × 朱志鑫' },
+        { id: '13', img: '13.jpg', name: '禹极', desc: '张泽禹 × 张极' }, { id: '14', img: '14.jpg', name: '极禹', desc: '张极 × 张泽禹' },
+        { id: '15', img: '15.jpg', name: '芒猴', desc: '张泽禹 × 左航' }, { id: '16', img: '16.jpg', name: '航禹', desc: '左航 × 张泽禹' },
+        { id: '17', img: '17.jpg', name: '宝铲', desc: '张泽禹 × 苏新皓' }, { id: '18', img: '18.jpg', name: '铲宝', desc: '苏新皓 × 张泽禹' },
+        { id: '19', img: '19.jpg', name: '禹顺', desc: '张泽禹 × 张峻豪' }, { id: '20', img: '20.jpg', name: '顺宝', desc: '张峻豪 × 张泽禹' },
+        { id: '21', img: '21.jpg', name: '禹涵', desc: '张泽禹 × 余宇涵' }, { id: '22', img: '22.jpg', name: '涵禹', desc: '余宇涵 × 张泽禹' },
+        { id: '23', img: '23.jpg', name: '极航', desc: '张极 × 左航' }, { id: '24', img: '24.jpg', name: '航极', desc: '左航 × 张极' },
+        { id: '25', img: '25.jpg', name: '极皓', desc: '张极 × 苏新皓' }, { id: '26', img: '26.jpg', name: '皓极', desc: '苏新皓 × 张极' },
+        { id: '27', img: '27.jpg', name: '极豪', desc: '张极 × 张峻豪' }, { id: '28', img: '28.jpg', name: '鼻米', desc: '张峻豪 × 张极' },
+        { id: '29', img: '29.jpg', name: '极涵', desc: '张极 × 余宇涵' }, { id: '30', img: '30.jpg', name: '涵极', desc: '余宇涵 × 张极' },
+        { id: '31', img: '31.jpg', name: '左新房', desc: '左航 × 苏新皓' }, { id: '32', img: '32.jpg', name: '苏左', desc: '苏新皓 × 左航' },
+        { id: '33', img: '33.jpg', name: '航顺', desc: '左航 × 张峻豪' }, { id: '34', img: '34.jpg', name: '顺航', desc: '张峻豪 × 左航' },
+        { id: '35', img: '35.jpg', name: '航涵', desc: '左航 × 余宇涵' }, { id: '36', img: '36.jpg', name: '涵航', desc: '余宇涵 × 左航' },
+        { id: '37', img: '37.jpg', name: '铲顺', desc: '苏新皓 × 张峻豪' }, { id: '38', img: '38.jpg', name: '顺铲', desc: '张峻豪 × 苏新皓' },
+        { id: '39', img: '39.jpg', name: '铲余', desc: '苏新皓 × 余宇涵' }, { id: '40', img: '40.jpg', name: '余苏', desc: '余宇涵 × 苏新皓' },
+        { id: '41', img: '41.jpg', name: '豪涵', desc: '张峻豪 × 余宇涵' }, { id: '42', img: '42.jpg', name: '余顺', desc: '余宇涵 × 张峻豪' }
+    ];
+
+    // ================= 2. 状态变量 =================
+    let shuffledPool = [];       
+    let currentIndex = 0;        
+    let totalRounds = 21;        
+    let votes = {};              
+    let selections = [];         
+    let history = [];            
+
+    // ================= 3. 初始化与洗牌 =================
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startVote() {
+        document.getElementById('welcome-state').style.display = 'none';
+        document.getElementById('voting-area').style.display = 'flex';
+        document.getElementById('results-state').style.display = 'none';
+        initVote();
+    }
+
+    function backToHome() {
+        document.getElementById('welcome-state').style.display = 'flex';
+        document.getElementById('voting-area').style.display = 'none';
+        document.getElementById('results-state').style.display = 'none';
+        initVote(); 
+    }
+
+    function initVote() {
+        shuffledPool = shuffleArray([...allOptions]); 
+        currentIndex = 0;
+        selections = [];
+        history = [];
+        votes = {};
+        allOptions.forEach(opt => votes[opt.id] = 0);
+        
+        document.getElementById('selection-count').innerText = '0 次选择';
+        updateUI();
+    }
+
+    // ================= 4. UI 渲染 =================
+    const elements = {
+        roundNum: document.getElementById('round-num'), roundDesc: document.getElementById('round-desc'),
+        progressBar: document.getElementById('progress-bar'), count: document.getElementById('selection-count'),
+        leftImg: document.getElementById('img-left'), leftName: document.getElementById('name-left'),
+        leftSub: document.getElementById('sub-left'), leftNum: document.getElementById('num-left'),
+        rightImg: document.getElementById('img-right'), rightName: document.getElementById('name-right'),
+        rightSub: document.getElementById('sub-right'), rightNum: document.getElementById('num-right'),
+        cardLeft: document.getElementById('card-left'), cardRight: document.getElementById('card-right')
+    };
+
+    function updateUI() {
+        if (currentIndex >= totalRounds) {
+            showFinished();
+            return;
+        }
+
+        const leftItem = shuffledPool[currentIndex * 2];
+        const rightItem = shuffledPool[currentIndex * 2 + 1];
+
+        elements.roundNum.innerText = `ROUND ${(currentIndex + 1).toString().padStart(2, '0')}`;
+        elements.roundDesc.innerText = `正在随机匹配第 ${currentIndex + 1} / ${totalRounds} 组CP · 必须二选一`;
+        elements.progressBar.style.width = `${(currentIndex / totalRounds) * 100}%`;
+        elements.count.innerText = `${selections.length} 次选择`;
+
+        elements.leftImg.src = leftItem.img; elements.leftName.innerText = leftItem.name;
+        elements.leftSub.innerText = leftItem.desc; elements.leftNum.innerText = leftItem.id;
+
+        elements.rightImg.src = rightItem.img; elements.rightName.innerText = rightItem.name;
+        elements.rightSub.innerText = rightItem.desc; elements.rightNum.innerText = rightItem.id;
+
+        elements.cardLeft.classList.remove('selected'); elements.cardRight.classList.remove('selected');
+    }
+
+    // ================= 5. 交互逻辑 =================
+    function selectCard(side) {
+        if (currentIndex >= totalRounds) return;
+        const leftItem = shuffledPool[currentIndex * 2];
+        const rightItem = shuffledPool[currentIndex * 2 + 1];
+        const chosenItem = side === 'left' ? leftItem : rightItem;
+
+        if (side === 'left') {
+            elements.cardLeft.classList.add('selected'); elements.cardRight.classList.remove('selected');
+        } else {
+            elements.cardRight.classList.add('selected'); elements.cardLeft.classList.remove('selected');
+        }
+
+        setTimeout(() => {
+            votes[chosenItem.id]++; 
+            history.push({ type: 'select', index: currentIndex, choice: side, itemId: chosenItem.id });
+            selections.push(side);
+            currentIndex++;
+            updateUI();
+        }, 150);
+    }
+
+    function undoSelection() {
+        if (history.length === 0) { alert('没有可以撤回的操作了'); return; }
+        const lastAction = history.pop();
+        if (lastAction.type === 'select') { votes[lastAction.itemId]--; } 
+        currentIndex = lastAction.index; selections.pop();
+        updateUI();
+        elements.cardLeft.classList.remove('selected'); elements.cardRight.classList.remove('selected');
+    }
+
+    function saveProgress() {
+        const progressData = { currentIndex, selections, history, votes, shuffledPool };
+        localStorage.setItem('cp_vote_progress', JSON.stringify(progressData));
+        const btn = document.getElementById('btn-save');
+        btn.innerText = '已保存 ✓'; setTimeout(() => { btn.innerText = '保存进度'; }, 1500);
+    }
+
+    // ================= 6. 结算页面 =================
+    function showFinished() {
+        document.getElementById('voting-area').style.display = 'none';
+        document.getElementById('results-state').style.display = 'flex';
+
+        const sortedOptions = [...allOptions].sort((a, b) => votes[b.id] - votes[a.id]);
+        const top1 = sortedOptions[0];
+        const top2 = sortedOptions[1];
+        const top3 = sortedOptions[2];
+        const top10 = sortedOptions.slice(0, 10);
+
+        // 渲染 Top 1
+        const top1Container = document.getElementById('top-1-container');
+        top1Container.innerHTML = `
+            <div class="top-1-item">
+                <div class="crown">👑</div>
+                <div class="top-img-wrapper">
+                    <img src="${top1.img}" alt="${top1.name}">
+                </div>
+                <div class="top-name">${top1.name}</div>
+                <div class="top-votes">${votes[top1.id]} 票</div>
+            </div>
+        `;
+
+        // 渲染 Top 2 & Top 3
+        const top23Container = document.getElementById('top-2-3-container');
+        top23Container.innerHTML = '';
+        const rank23 = [top2, top3];
+        rank23.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'top-item';
+            div.innerHTML = `
+                <div class="top-img-wrapper">
+                    <img src="${item.img}" alt="${item.name}">
+                </div>
+                <div class="top-name">${item.name}</div>
+                <div class="top-votes">${votes[item.id]} 票</div>
+            `;
+            top23Container.appendChild(div);
+        });
+
+        // 渲染 Top 10 列表
+        const listContainer = document.getElementById('top-list-container');
+        listContainer.innerHTML = '';
+        top10.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'rank-row';
+            div.innerHTML = `
+                <div class="rank-num">${index + 1}</div>
+                <div class="rank-info">
+                    <div class="rank-img-wrapper"><img src="${item.img}" alt="${item.name}"></div>
+                    <span>${item.name}</span>
+                </div>
+                <div class="rank-votes">${votes[item.id]} 票</div>
+            `;
+            listContainer.appendChild(div);
+        });
+    }
+
+    function restartVote() { 
+        backToHome();
+    }
+
+    window.onload = function() {
+        document.getElementById('welcome-state').style.display = 'flex';
+        document.getElementById('voting-area').style.display = 'none';
+        document.getElementById('results-state').style.display = 'none';
+    };
+</script>
+</body>
+</html>
